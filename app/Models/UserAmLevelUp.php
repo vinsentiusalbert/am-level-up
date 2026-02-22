@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class UserAmLevelUp extends Model
+{
+    protected $table = 'user_am_level_up';
+
+    protected $fillable = [
+        'user_id',
+        'nama_pelanggan',
+        'akun_myads_pelanggan',
+        'nomor_hp_pelanggan',
+    ];
+}
+
