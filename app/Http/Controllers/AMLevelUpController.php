@@ -18,7 +18,7 @@ class AMLevelUpController extends Controller
     public function index()
     {
         // logUserLogin();
-        return view('panenpoin.inputdatapoin');
+        return view('amlevelup.inputdatapoin');
     }
     
     // Simpan data AM Level UP
@@ -38,7 +38,7 @@ class AMLevelUpController extends Controller
                 'nomor_hp_pelanggan' => $request->nomor_hp_pelanggan,
             ]);
             
-            return redirect()->route('panenpoin.index')
+            return redirect()->route('amlevelup.index')
                 ->with('success', 'Data pelanggan AM Level UP berhasil disimpan!');
         } catch (\Exception $e) {
             return redirect()->back()
@@ -64,7 +64,7 @@ class AMLevelUpController extends Controller
                 'selected' => $date->format('Y-m-d') === $currentMonth,
             ];
         }
-        return view('panenpoin.reportpoin', compact('months'));
+        return view('amlevelup.reportpoin', compact('months'));
     }
     
     // Get data untuk DataTable
@@ -77,8 +77,8 @@ class AMLevelUpController extends Controller
         
         try {
             $user = auth()->user();
-            \Log::info('Starting calculatePanenPoinData...');
-            $data = $this->calculatePanenPoinData($request->tanggal);
+            \Log::info('Starting calculateAmLevelUpData...');
+            $data = $this->calculateAmLevelUpData($request->tanggal);
             $prizes = Prize::orderBy('point', 'desc')->get();
             if ($user) {
                 $date = Carbon::today();
@@ -110,7 +110,7 @@ class AMLevelUpController extends Controller
 
             // true kalau sudah boleh redeem
             $isRedeemPeriod = $today->gte($redeemStartDate);
-            return view('reward.index', compact('data', 'point','prizes', 'hasRedeemed', 'redeemedPrizeId',
+            return view('amlevelup.index', compact('data', 'point','prizes', 'hasRedeemed', 'redeemedPrizeId',
     'isRedeemPeriod'));
                 
         } catch (\Exception $e) {
@@ -121,7 +121,7 @@ class AMLevelUpController extends Controller
     }
     
     // Hitung data AM Level UP (ambil dari summary table)
-    private function calculatePanenPoinData($tanggal = null)
+    private function calculateAmLevelUpData($tanggal = null)
     {
         try {
             \Log::info("=== READING FROM SUMMARY TABLE ===");
@@ -198,7 +198,7 @@ class AMLevelUpController extends Controller
             return $result;
 
         } catch (\Exception $e) {
-            \Log::error("Error in calculatePanenPoinData: " . $e->getMessage());
+            \Log::error("Error in calculateAmLevelUpData: " . $e->getMessage());
             \Log::error($e->getTraceAsString());
             return [];
         }
@@ -209,7 +209,7 @@ class AMLevelUpController extends Controller
     public function export(Request $request)
     {
         try {
-            $data = $this->calculatePanenPoinData($request->tanggal);
+            $data = $this->calculateAmLevelUpData($request->tanggal);
             
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -270,7 +270,7 @@ class AMLevelUpController extends Controller
     }
     
     // Refresh Summary AM Level UP (untuk di-schedule)
-    public function refreshSummaryPanenPoin()
+    public function refreshSummaryAmLevelUp()
     {
         try {
             \Log::info('=== REFRESH SUMMARY AM LEVEL UP STARTED ===');
@@ -389,7 +389,7 @@ class AMLevelUpController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error("Error in refreshSummaryPanenPoin: " . $e->getMessage());
+            \Log::error("Error in refreshSummaryAmLevelUp: " . $e->getMessage());
             \Log::error($e->getTraceAsString());
             return response()->json(['error' => $e->getMessage()], 500);
         }
