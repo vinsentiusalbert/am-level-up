@@ -88,7 +88,10 @@ class B2BPortalController extends Controller
 
         $rows = $users->map(function ($user) use ($summaryByUser) {
             $summary = $summaryByUser->get($user->id);
-            $basePoint = (int) (($summary->point_rounded ?? 0) + ($summary->campaign_point ?? 0));
+            $totalTopup = (float) ($summary->total_topup ?? 0);
+            $campaignPoint = (int) ($summary->campaign_point ?? 0);
+            // Samakan dengan performansi: floor(sum poin sisa bulan ini) = floor((topup/1jt) + poin paket)
+            $basePoint = (int) floor(($totalTopup / 1000000) + $campaignPoint);
             $redeemPoint = (int) ($summary->total_redeem_point ?? 0);
             $finalPoint = max($basePoint - $redeemPoint, 0);
 
@@ -96,11 +99,11 @@ class B2BPortalController extends Controller
                 'user_id' => $user->id,
                 'name' => $user->name,
                 'client_count' => (int) ($summary->client_count ?? 0),
-                'total_topup' => (float) ($summary->total_topup ?? 0),
+                'total_topup' => $totalTopup,
                 'points' => $finalPoint,
                 'point_decimal' => (float) ($summary->point_decimal ?? 0),
                 'carry_out_decimal' => (float) ($summary->carry_out_decimal ?? 0),
-                'campaign_point' => (int) ($summary->campaign_point ?? 0),
+                'campaign_point' => $campaignPoint,
                 'total_redeem_point' => $redeemPoint,
             ];
         })->sortBy([

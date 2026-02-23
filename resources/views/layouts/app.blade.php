@@ -58,6 +58,34 @@
             box-shadow: 0 8px 20px rgba(38,166,187,.35);
             color: #fff;
         }
+
+        .menu-link {
+            position: relative;
+            display: inline-block;
+            text-decoration: none;
+            padding-bottom: 4px;
+        }
+
+        .menu-link::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2px;
+            background: #ffffff;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform 220ms ease;
+        }
+
+        .menu-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        .menu-link.is-active::after {
+            transform: scaleX(1);
+        }
     </style>
 </head>
 
@@ -77,19 +105,19 @@
                 @if ((auth()->user()->role ?? null) === 'b2b')
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold {{ request()->routeIs('b2b.clients.*') ? 'active' : '' }}"
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.clients.*') ? 'is-active' : '' }}"
                                href="{{ route('b2b.clients.index') }}">Input Klien</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold {{ request()->routeIs('b2b.performance') ? 'active' : '' }}"
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.performance') ? 'is-active' : '' }}"
                                href="{{ route('b2b.performance') }}">Daftar Performansi</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold {{ request()->routeIs('b2b.leaderboard') ? 'active' : '' }}"
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.leaderboard') ? 'is-active' : '' }}"
                                href="{{ route('b2b.leaderboard') }}">Leader Board</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white fw-semibold {{ request()->routeIs('b2b.rewards') ? 'active' : '' }}"
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.rewards') ? 'is-active' : '' }}"
                                href="{{ route('b2b.rewards') }}">Reward</a>
                         </li>
                     </ul>

@@ -27,7 +27,7 @@
             }
 
             $badgeRows = collect($data[$badgeKey] ?? []);
-            $currentEmail = auth()->user()->email_client ?? null;
+            $currentEmail = auth()->user()->email_client ?? auth()->user()->email ?? null;
             $rankIndex = $badgeRows->search(fn ($row) => ($row['email_client'] ?? null) === $currentEmail);
             $badgeRank = $rankIndex === false ? null : ($rankIndex + 1);
         @endphp
@@ -51,7 +51,7 @@
 </section>
 
 {{-- ================= LIGA ================= --}}
-{{-- @auth --}}
+@auth('web')
 <div class="text-end mb-4">
     <button 
         class="btn btn-warning fw-semibold px-4"
@@ -60,7 +60,7 @@
         + Input Pencapaian AM
     </button>
 </div>
-{{-- @endauth --}}
+@endauth
 @if(isset($point) && is_object($point) && isset($point->poin))
 <div class="section-card text-center mb-5">
     <h2 class="mb-4">Badges</h2>
@@ -145,7 +145,6 @@
                             {{-- <th>ID</th> --}}
                             <th>Nama Akun</th>
                             <th>Nama Pelanggan</th>
-                            <th>Canvasser</th>
                             <th>Total Poin</th>
                             <th>Kategori Liga</th>
                         </tr>
@@ -165,25 +164,11 @@
                             @endphp
 
                             <tr>
-                                @php
-                                    $email = $row['email_client'];
-                                    [$name, $domain] = explode('@', $email);
-
-                                    $maskedName = substr($name, 0, 2)
-                                        . str_repeat('*', max(strlen($name) - 2, 0));
-
-                                    $maskedDomain = substr($domain, 0, 2)
-                                        . str_repeat('*', max(strlen($domain) - 2, 0));
-                                @endphp
                                 <td>{{ $index + 1 }}</td>
                                 {{-- <td>{{ $uuid }}</td> --}}
-                                <td>{{
-                                    substr($row['nama_akun'], 0, 2) . str_repeat('*', strlen($row['nama_akun']) - 2)
-                                }}</td>
+                                <td>{{ $row['nama_akun'] }}</td>
                                 {{-- <td>{{$row['nama_pelanggan']}}</td> --}}
-                                <td>{{ $maskedName .'@'. $maskedDomain }}</td>
-                                
-                                <td>{{ $row['nama_canvasser'] }}</td>
+                                <td>{{ $row['email_client'] }}</td>
                                 <td>
                                     <span class="fw-bold text-warning">
                                         {{ $row['poin'] }}
@@ -202,7 +187,7 @@
 
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">
+                            <td colspan="5" class="text-center text-muted">
                                 Data belum tersedia
                             </td>
                         </tr>
@@ -238,7 +223,6 @@
                             {{-- <th>ID</th> --}}
                             <th>Nama Akun</th>
                             <th>Nama Pelanggan</th>
-                            <th>Canvasser</th>
                             <th>Total Poin</th>
                             <th>Kategori Liga</th>
                         </tr>
@@ -258,25 +242,11 @@
                             @endphp
 
                             <tr>
-                                @php
-                                    $email = $row['email_client'];
-                                    [$name, $domain] = explode('@', $email);
-
-                                    $maskedName = substr($name, 0, 2)
-                                        . str_repeat('*', max(strlen($name) - 2, 0));
-
-                                    $maskedDomain = substr($domain, 0, 2)
-                                        . str_repeat('*', max(strlen($domain) - 2, 0));
-                                @endphp
                                 <td>{{ $index + 1 }}</td>
                                 {{-- <td>{{ $uuid }}</td> --}}
-                                <td>{{
-                                    substr($row['nama_akun'], 0, 2) . str_repeat('*', strlen($row['nama_akun']) - 2)
-                                }}</td>
+                                <td>{{ $row['nama_akun'] }}</td>
                                 {{-- <td>{{$row['nama_pelanggan']}}</td> --}}
-                                <td>{{ $maskedName .'@'. $maskedDomain }}</td>
-                                
-                                <td>{{ $row['nama_canvasser'] }}</td>
+                                <td>{{ $row['email_client'] }}</td>
                                 <td>
                                     <span class="fw-bold text-warning">
                                         {{ $row['poin'] }}
@@ -295,7 +265,7 @@
 
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">
+                            <td colspan="5" class="text-center text-muted">
                                 Data belum tersedia
                             </td>
                         </tr>
@@ -331,7 +301,6 @@
                             {{-- <th>ID</th> --}}
                             <th>Nama Akun</th>
                             <th>Nama Pelanggan</th>
-                            <th>Canvasser</th>
                             <th>Total Poin</th>
                             <th>Kategori Liga</th>
                         </tr>
@@ -351,24 +320,10 @@
                             @endphp
 
                             <tr>
-                                @php
-                                    $email = $row['email_client'];
-                                    [$name, $domain] = explode('@', $email);
-
-                                    $maskedName = substr($name, 0, 2)
-                                        . str_repeat('*', max(strlen($name) - 2, 0));
-
-                                    $maskedDomain = substr($domain, 0, 2)
-                                        . str_repeat('*', max(strlen($domain) - 2, 0));
-                                @endphp
                                 <td>{{ $index + 1 }}</td>
                                 {{-- <td>{{ $row['uuid'] }}</td> --}}
-                                <td>{{
-                                    substr($row['nama_akun'], 0, 2) . str_repeat('*', strlen($row['nama_akun']) - 2)
-                                }}</td>
-                                <td>{{ $maskedName .'@'. $maskedDomain }}</td>
-                                
-                                <td>{{ $row['nama_canvasser'] }}</td>
+                                <td>{{ $row['nama_akun'] }}</td>
+                                <td>{{ $row['email_client'] }}</td>
                                 <td>
                                     <span class="fw-bold text-warning">
                                         {{ $row['poin'] }}
@@ -387,7 +342,7 @@
 
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">
+                            <td colspan="5" class="text-center text-muted">
                                 Data belum tersedia
                             </td>
                         </tr>
@@ -453,7 +408,7 @@
                     Stok: {{ $p->stock }} Unit
                 </div>
             </div>
-
+            @auth('web')
             <button
                 type="button"
                 class="btn
@@ -462,7 +417,7 @@
                 {{ $disabled ? 'disabled' : '' }}
             >
                 @if ($isRedeemedItem)
-                    ✓ Sudah Diredeem
+                    Sudah Diredeem
                 @elseif ($hasRedeemed)
                     Tidak Tersedia
                 @elseif ($outOfStock)
@@ -473,6 +428,11 @@
                     Redeem
                 @endif
             </button>
+            @else
+            <div class="mt-3 py-2 text-center text-muted fw-semibold border rounded">
+                Login untuk Redeem
+            </div>
+            @endauth
         </div>
     </div>
 @endforeach
@@ -484,6 +444,7 @@
 </div>
 
 </div>
+@auth('web')
 <!-- Modal Input Client -->
 <div class="modal fade" id="modalInputClient" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -583,6 +544,7 @@
         </div>
     </div>
 </div>
+@endauth
 @endsection
 
 @push('scripts')
@@ -694,3 +656,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </script>
 @endpush
+
