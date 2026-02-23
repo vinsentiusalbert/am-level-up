@@ -21,26 +21,119 @@ class AMLevelUpController extends Controller
         return view('amlevelup.inputdatapoin');
     }
     
-    // Simpan data AM Level UP
     public function store(Request $request)
     {
         $request->validate([
-            'nama_pelanggan' => 'required|string|max:255',
-            'akun_myads_pelanggan' => 'required|max:255',
-            'nomor_hp_pelanggan' => 'required|string|max:20',
+            'company_name' => 'required|string|max:255',
+            'mobile_phone' => ['required', 'string', 'max:20', 'regex:/^62\\d{9,14}$/'],
+            'email' => 'required|email|max:255|unique:leads_master,email',
+            'nama' => 'nullable|string|max:255',
+            'sector_id' => 'nullable|exists:sectors,id',
+            'myads_account' => 'required|string|max:255',
+            'remarks' => 'nullable|string|max:1000',
+        ], [
+            'mobile_phone.regex' => 'Nomor HP harus diawali 62 dan hanya angka (9-14 digit setelah 62).',
+            'email.unique' => 'Email sudah terdaftar di leads master, tidak bisa input ulang.',
         ]);
         
         try {
-            UserAmLevelUp::create([
+            DB::beginTransaction();
+            
+            // Auto-create akun di akun_am_level_up
+            $emailClient = strtolower(trim($request->myads_account));
+            $nomorHp = trim($request->mobile_phone);
+            $namaPelanggan = $request->nama ?: $request->company_name;
+
+            // Simpan field input tambahan ke leads_master (bukan user_am_level_up)
+            $leadMaster = LeadsMaster::create([
                 'user_id' => Auth::id(),
-                'nama_pelanggan' => $request->nama_pelanggan,
-                'akun_myads_pelanggan' => strtolower($request->akun_myads_pelanggan),
-                'nomor_hp_pelanggan' => $request->nomor_hp_pelanggan,
+                'source_id' => null,
+                'sector_id' => $request->sector_id,
+                'company_name' => $request->company_name,
+                'mobile_phone' => $nomorHp,
+                'email' => strtolower(trim($request->email)),
+                'status' => 1,
+                'nama' => $request->nama,
+                'address' => null,
+                'remarks' => $request->remarks,
+                'myads_account' => $emailClient,
+                'data_type' => 'Eksisting Akun',
             ]);
             
+            // Cek apakah akun sudah ada
+            $existingAkun = AkunAmLevelUp::where('user_id', Auth::id())
+                ->where('email_client', $emailClient)
+                ->first();
+            
+            $isNewAccount = false;
+            
+            if (!$existingAkun) {
+                // Create akun baru
+                $akun = AkunAmLevelUp::create([
+                    'user_id' => Auth::id(),
+                    'leads_master_id' => $leadMaster->id,
+                    'nama_akun' => $namaPelanggan,
+                    'email_client' => $emailClient,
+                    'password' => bcrypt('123456'), // Default password
+                    'source' => 'user_am_level_up',
+                ]);
+                
+                \Log::info("Akun created for: {$emailClient}");
+                $isNewAccount = true;
+                
+                // Simpan ke user_am_level_up hanya jika akun baru
+                $amlevelup = UserAmLevelUp::create([
+                    'user_id' => Auth::id(),
+                    'nama_pelanggan' => $namaPelanggan,
+                    'akun_myads_pelanggan' => $emailClient,
+                    'nomor_hp_pelanggan' => $nomorHp,
+                ]);
+            } else {
+                $akun = $existingAkun;
+                if (!$akun->leads_master_id || $akun->leads_master_id !== $leadMaster->id) {
+                    $akun->update(['leads_master_id' => $leadMaster->id]);
+                }
+                \Log::info("Akun already exists for: {$emailClient}");
+                $isNewAccount = false;
+            }
+            
+            // Kirim notifikasi email & WhatsApp (untuk akun baru atau existing)
+            try {
+                $this->sendAccountNotification(
+                    $akun,
+                    $nomorHp,
+                    '123456' // Plain password untuk notifikasi
+                );
+            } catch (\Exception $e) {
+                \Log::warning("Notification failed (not blocking transaction): " . $e->getMessage());
+                // Jangan block transaksi - akun sudah dibuat, notifikasi bisa dicoba ulang
+            }
+            
+            DB::commit();
+            
+            // Refresh summary AM Level UP untuk user ini (langsung setelah input)
+            try {
+                $this->refreshSummaryForSingleUser(Auth::id(), $emailClient);
+                \Log::info("Summary refreshed immediately after input for email: {$emailClient}");
+            } catch (\Exception $e) {
+                \Log::warning("Failed to refresh summary immediately: " . $e->getMessage());
+                // Tidak masalah, akan diupdate scheduler jam 7 pagi
+            }
+            
+            // Tentukan pesan berdasarkan apakah akun baru atau existing
+            if ($isNewAccount) {
+                $successMessage = 'Data pelanggan berhasil disimpan dan akun telah dibuat!';
+            } else {
+                $successMessage = 'Akun sudah pernah dibuat, notifikasi telah dikirimkan ulang!';
+            }
+            
             return redirect()->route('amlevelup.index')
-                ->with('success', 'Data pelanggan AM Level UP berhasil disimpan!');
+                ->with('success', $successMessage)
+                ->with('is_existing_account', !$isNewAccount);
+                
         } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error("Error in store: " . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Gagal menyimpan data: ' . $e->getMessage())
                 ->withInput();

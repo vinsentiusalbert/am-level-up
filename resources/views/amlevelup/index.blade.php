@@ -51,6 +51,16 @@
 </section>
 
 {{-- ================= LIGA ================= --}}
+{{-- @auth --}}
+<div class="text-end mb-4">
+    <button 
+        class="btn btn-warning fw-semibold px-4"
+        data-bs-toggle="modal" 
+        data-bs-target="#modalInputClient">
+        + Input Pencapaian AM
+    </button>
+</div>
+{{-- @endauth --}}
 @if(isset($point) && is_object($point) && isset($point->poin))
 <div class="section-card text-center mb-5">
     <h2 class="mb-4">Badges</h2>
@@ -473,6 +483,105 @@
 
 </div>
 
+</div>
+<!-- Modal Input Client -->
+<div class="modal fade" id="modalInputClient" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('amlevelup.store') }}">
+                @csrf
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Input Pencapaian AM</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Perusahaan *</label>
+                            <input type="text" name="company_name"
+                                   class="form-control @error('company_name') is-invalid @enderror"
+                                   value="{{ old('company_name') }}" required>
+                            @error('company_name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email"
+                                   class="form-control @error('email') is-invalid @enderror"
+                                   value="{{ old('email') }}" required>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor HP (format 62xxxx) *</label>
+                            <input type="text" name="mobile_phone"
+                                   class="form-control @error('mobile_phone') is-invalid @enderror"
+                                   value="{{ old('mobile_phone') }}" required>
+                            @error('mobile_phone')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Pelanggan</label>
+                            <input type="text" name="nama"
+                                   class="form-control @error('nama') is-invalid @enderror"
+                                   value="{{ old('nama') }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Sector</label>
+                            <select name="sector_id"
+                                    class="form-select @error('sector_id') is-invalid @enderror">
+                                <option value="">-- Pilih Sector --</option>
+                                @foreach($sectors ?? [] as $sector)
+                                    <option value="{{ $sector->id }}"
+                                        {{ old('sector_id') == $sector->id ? 'selected' : '' }}>
+                                        {{ $sector->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Akun MyAds (Email Client) *</label>
+                            <input type="text" name="myads_account"
+                                   class="form-control @error('myads_account') is-invalid @enderror"
+                                   value="{{ old('myads_account') }}" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea name="remarks"
+                                      class="form-control @error('remarks') is-invalid @enderror"
+                                      rows="3">{{ old('remarks') }}</textarea>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="btn btn-warning fw-semibold">
+                        Simpan Data
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 

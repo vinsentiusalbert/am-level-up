@@ -11,6 +11,8 @@ Route::get('/', [AMLevelUpController::class, 'getReportData'])->name('home');
 Route::get('/am-level-up/input', [AMLevelUpController::class, 'index'])->name('amlevelup.index');
 Route::get('/am-level-up/report', [AMLevelUpController::class, 'report'])->name('amlevelup.report');
 
+Route::post('/am-level-up/store', [AMLevelUpController::class, 'store'])->name('amlevelup.store');
+
 Route::post('/login', [BackController::class, 'login'])->name('login');
 Route::post('/logout', [BackController::class, 'logout'])->name('logout');
 
