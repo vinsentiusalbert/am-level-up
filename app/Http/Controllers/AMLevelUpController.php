@@ -78,7 +78,7 @@ class AMLevelUpController extends Controller
                     'source' => 'user_am_level_up',
                 ]);
                 
-                \Log::info("Akun created for: {$emailClient}");
+                // \Log::info("Akun created for: {$emailClient}");
                 $isNewAccount = true;
                 
                 // Simpan ke user_am_level_up hanya jika akun baru
@@ -175,6 +175,7 @@ class AMLevelUpController extends Controller
             $prizes = Prize::orderBy('point', 'desc')->get();
             if ($user) {
                 $date = Carbon::today();
+                $userEmail = $user->email_client ?? $user->email;
                 $point = DB::table('summary_am_level_up')
                     ->select(
                         'nama_canvasser',
@@ -186,7 +187,7 @@ class AMLevelUpController extends Controller
                         'poin_akumulasi',
                         DB::raw('(poin + poin_package) as poin'),
                         'bulan'
-                    )->where('email_client', '=', Auth::user()->email_client)
+                    )->where('email_client', '=', $userEmail)
                         ->whereMonth('created_at', $date->month)
                         ->whereYear('created_at', $date->year)->first();
             } else {
@@ -535,9 +536,10 @@ class AMLevelUpController extends Controller
 
                 // Lock poin user
                 $date = now();
+                $userEmail = $user->email_client ?? $user->email;
 
                 $userPointRecord = DB::table('summary_am_level_up')
-                    ->where('email_client', $user->email_client)
+                    ->where('email_client', $userEmail)
                     ->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)
                     ->lockForUpdate()

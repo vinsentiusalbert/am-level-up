@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// use App\Models\User;
-use App\Models\AkunAmLevelUp;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Session;
 
 class BackController extends Controller
@@ -28,11 +25,20 @@ class BackController extends Controller
         
         // dd('asd');
         // 2. Coba login
-        if (Auth::attempt(['email_client' => $request->email, 'password' => $request->password])) {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
+
+            if (($user->role ?? null) !== 'b2b') {
+                Auth::logout();
+
+                return back()->withErrors([
+                    'email' => 'Akses login hanya untuk user role b2b.',
+                ])->withInput();
+            }
+
             $request->session()->regenerate();
             
-            return redirect()->route('home'); // fallback
+            return redirect()->route('b2b.clients.index');
             
         }
 
