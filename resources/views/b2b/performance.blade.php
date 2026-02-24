@@ -64,7 +64,7 @@
                             <th>Akun MyAds</th>
                             <th class="text-end">Topup</th>
                             <th class="text-end">Poin</th>
-                            <th class="text-end">Poin Paket</th>
+                            {{-- <th class="text-end">Poin Paket</th> --}}
                             <th class="text-end">Poin Sisa</th>
                         </tr>
                     </thead>
@@ -78,7 +78,7 @@
                                 <td>{{ $row['myads_account'] }}</td>
                                 <td class="text-end">Rp {{ number_format($row['topup'], 0, ',', '.') }}</td>
                                 <td class="text-end">{{ number_format($row['point_decimal'], 0, ',', '.') }}</td>
-                                <td class="text-end">{{ $row['point_package'] }}</td>
+                                {{-- <td class="text-end">{{ $row['point_package'] }}</td> --}}
                                 <td class="text-end">{{ number_format($row['point_sisa'], 0, ',', '.')  }}</td>
                             </tr>
                         @empty
