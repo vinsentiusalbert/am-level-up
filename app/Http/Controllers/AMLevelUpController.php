@@ -78,7 +78,7 @@ class AMLevelUpController extends Controller
                     'source' => 'user_am_level_up',
                 ]);
                 
-                \Log::info("Akun created for: {$emailClient}");
+                // \Log::info("Akun created for: {$emailClient}");
                 $isNewAccount = true;
                 
                 // Simpan ke user_am_level_up hanya jika akun baru
@@ -175,20 +175,38 @@ class AMLevelUpController extends Controller
             $prizes = Prize::orderBy('point', 'desc')->get();
             if ($user) {
                 $date = Carbon::today();
-                $point = DB::table('summary_am_level_up')
-                    ->select(
-                        'nama_canvasser',
-                        'email_client',
-                        'nomor_hp_client',
-                        DB::raw('CAST(total_settlement AS DECIMAL(15,2)) as total_settlement_raw'),
-                        DB::raw('FORMAT(total_settlement, 0, "id_ID") as total_settlement'),
-                        'poin_bulan_ini',
-                        'poin_akumulasi',
-                        DB::raw('(poin + poin_package) as poin'),
-                        'bulan'
-                    )->where('email_client', '=', Auth::user()->email_client)
-                        ->whereMonth('created_at', $date->month)
-                        ->whereYear('created_at', $date->year)->first();
+                $userEmail = $user->email_client ?? $user->email;
+                if (($user->role ?? null) === 'b2b') {
+                    $summary = DB::table('b2b_am_point_summaries')
+                        ->where('user_id', $user->id)
+                        ->whereDate('period_month', $date->copy()->startOfMonth()->toDateString())
+                        ->first();
+
+                    $finalPoint = 0;
+                    if ($summary) {
+                        $basePoint = ((int) ($summary->point_rounded ?? 0)) + ((int) ($summary->campaign_point ?? 0));
+                        $finalPoint = max($basePoint - ((int) ($summary->total_redeem_point ?? 0)), 0);
+                    }
+
+                    $point = (object) [
+                        'poin' => (int) $finalPoint,
+                    ];
+                } else {
+                    $point = DB::table('summary_am_level_up')
+                        ->select(
+                            'nama_canvasser',
+                            'email_client',
+                            'nomor_hp_client',
+                            DB::raw('CAST(total_settlement AS DECIMAL(15,2)) as total_settlement_raw'),
+                            DB::raw('FORMAT(total_settlement, 0, "id_ID") as total_settlement'),
+                            'poin_bulan_ini',
+                            'poin_akumulasi',
+                            DB::raw('(poin + poin_package) as poin'),
+                            'bulan'
+                        )->where('email_client', '=', $userEmail)
+                            ->whereMonth('created_at', $date->month)
+                            ->whereYear('created_at', $date->year)->first();
+                }
             } else {
                 $point = 0;
             }
@@ -217,6 +235,49 @@ class AMLevelUpController extends Controller
     private function calculateAmLevelUpData($tanggal = null)
     {
         try {
+            $today = Carbon::today();
+            $periodMonth = $today->copy()->startOfMonth()->toDateString();
+
+            // Prioritas: samakan data Top 10 homepage dengan leaderboard login (B2B summary).
+            $b2bRows = DB::table('b2b_am_point_summaries as s')
+                ->join('users as u', 'u.id', '=', 's.user_id')
+                ->whereDate('s.period_month', $periodMonth)
+                ->where('u.role', 'b2b')
+                ->select(
+                    'u.name as nama_canvasser',
+                    'u.name as nama_akun',
+                    'u.email as email_client',
+                    DB::raw('GREATEST((FLOOR((COALESCE(s.total_topup,0) / 1000000) + COALESCE(s.campaign_point,0)) - COALESCE(s.total_redeem_point,0)), 0) as poin')
+                )
+                ->orderByDesc(DB::raw('GREATEST((FLOOR((COALESCE(s.total_topup,0) / 1000000) + COALESCE(s.campaign_point,0)) - COALESCE(s.total_redeem_point,0)), 0)'))
+                ->get();
+
+            if ($b2bRows->isNotEmpty()) {
+                $mapResult = function ($rows) use ($today) {
+                    return $rows->take(10)->map(function ($item) use ($today) {
+                        return [
+                            'nama_canvasser' => $item->nama_canvasser,
+                            'email_client' => $item->email_client,
+                            'nomor_hp_client' => '-',
+                            'total_settlement' => '0',
+                            'total_settlement_raw' => 0,
+                            'poin_bulan_ini' => 0,
+                            'poin_akumulasi' => 0,
+                            'poin' => (int) $item->poin,
+                            'bulan' => $today->locale('id')->translatedFormat('F Y'),
+                            'uuid' => null,
+                            'nama_akun' => $item->nama_akun,
+                        ];
+                    })->toArray();
+                };
+
+                return [
+                    'poin_0_100' => $mapResult($b2bRows->filter(fn ($r) => (int) $r->poin >= 0 && (int) $r->poin <= 100)->values()),
+                    'poin_101_200' => $mapResult($b2bRows->filter(fn ($r) => (int) $r->poin >= 101 && (int) $r->poin <= 200)->values()),
+                    'poin_201_300' => $mapResult($b2bRows->filter(fn ($r) => (int) $r->poin >= 201)->values()),
+                ];
+            }
+
             \Log::info("=== READING FROM SUMMARY TABLE ===");
 
             $baseQuery = DB::table('summary_am_level_up as s')
@@ -535,9 +596,10 @@ class AMLevelUpController extends Controller
 
                 // Lock poin user
                 $date = now();
+                $userEmail = $user->email_client ?? $user->email;
 
                 $userPointRecord = DB::table('summary_am_level_up')
-                    ->where('email_client', $user->email_client)
+                    ->where('email_client', $userEmail)
                     ->whereMonth('created_at', $date->month)
                     ->whereYear('created_at', $date->year)
                     ->lockForUpdate()

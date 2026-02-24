@@ -11,7 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'b2b' => \App\Http\Middleware\EnsureB2BRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

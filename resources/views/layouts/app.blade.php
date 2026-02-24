@@ -58,6 +58,34 @@
             box-shadow: 0 8px 20px rgba(38,166,187,.35);
             color: #fff;
         }
+
+        .menu-link {
+            position: relative;
+            display: inline-block;
+            text-decoration: none;
+            padding-bottom: 4px;
+        }
+
+        .menu-link::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2px;
+            background: #ffffff;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform 220ms ease;
+        }
+
+        .menu-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        .menu-link.is-active::after {
+            transform: scaleX(1);
+        }
     </style>
 </head>
 
@@ -66,9 +94,36 @@
 <!-- ================= NAVBAR ================= -->
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#">
+        <a class="navbar-brand fw-bold" href="{{ route('home') }}">
             <img src="{{ asset('img/assets/myads.png') }}" height="32">
         </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            @auth('web')
+                @if ((auth()->user()->role ?? null) === 'b2b')
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.clients.*') ? 'is-active' : '' }}"
+                               href="{{ route('b2b.clients.index') }}">Input Klien</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.performance') ? 'is-active' : '' }}"
+                               href="{{ route('b2b.performance') }}">Daftar Performansi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.leaderboard') ? 'is-active' : '' }}"
+                               href="{{ route('b2b.leaderboard') }}">Leader Board</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-semibold menu-link {{ request()->routeIs('b2b.rewards') ? 'is-active' : '' }}"
+                               href="{{ route('b2b.rewards') }}">Reward</a>
+                        </li>
+                    </ul>
+                @endif
+            @endauth
+        </div>
         <div class="ms-auto">
             @guest('web')
                 <button class="btn btn-outline-light fw-semibold"
@@ -78,16 +133,13 @@
                 </button>
             @else
                 <div class="container-fluid d-flex justify-content-end align-items-center">
-                    <a href="#prizes" class="text-white fw-semibold d-flex align-items-center me-3 reward-link" style="text-decoration: none; font-weight: normal;">
-                        Reward
-                    </a>
                     <div class="dropdown">
                         <a href="#"
                         class="nav-link dropdown-toggle text-white fw-semibold d-flex align-items-center reward-link"
                         role="button"
                         data-bs-toggle="dropdown"
                         aria-expanded="false">
-                            Hi, {{ auth()->user()->nama_akun ?? auth()->user()->email_client }}
+                            Hi, {{ auth()->user()->name ?? auth()->user()->email }}
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow">
@@ -109,6 +161,15 @@
     </div>
 </nav>
 
+<div class="container mt-3">
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+</div>
+
 <!-- ================= LOGIN MODAL ================= -->
 <div class="modal fade modal-login" id="loginModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
@@ -124,7 +185,7 @@
 
                 <div class="modal-body pt-2">
                     <p class="text-muted mb-4">
-                        Silakan login untuk menukarkan reward dan melihat progres liga.
+                        Silakan login untuk mengelola klien, melihat performansi, leaderboard, dan reward.
                     </p>
 
                     <div class="mb-3">
