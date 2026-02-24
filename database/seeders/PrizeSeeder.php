@@ -17,7 +17,7 @@ class PrizeSeeder extends Seeder
 
         DB::table('prizes_am_level_up')->insert([
             [
-                'img' => 'gopay.png',
+                'img' => '10.png',
                 'name' => 'Saldo LinkAja/Ovo/Gopay 10 juta',
                 'point' => 250,
                 'stock' => 1,
@@ -25,7 +25,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => 'iphone.png',
+                'img' => 'apple ipad gen 11.png',
                 'name' => 'Apple iPad Gen 11 2025',
                 'point' => 220,
                 'stock' => 1,
@@ -33,7 +33,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => 'garmin.png',
+                'img' => 'apple watch se3.png',
                 'name' => 'Apple Watch SE3',
                 'point' => 200,
                 'stock' => 2,
@@ -41,7 +41,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => '1.png',
+                'img' => 'nescafe.png',
                 'name' => 'Nescafe Dolce Gusto Genio S Plus Mesin Kopi',
                 'point' => 170,
                 'stock' => 4,
@@ -49,7 +49,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => 'tv.png',
+                'img' => 'tv cooca.png',
                 'name' => 'TV COOCAA S3U 32 Inch Smart TV',
                 'point' => 150,
                 'stock' => 5,
@@ -57,7 +57,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => 'gopay.png',
+                'img' => '10.png',
                 'name' => 'Saldo LinkAja/Ovo/Gopay 1 juta',
                 'point' => 130,
                 'stock' => 10,
@@ -65,7 +65,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => 'gopay.png',
+                'img' => '10.png',
                 'name' => 'Saldo LinkAja/Ovo/Gopay 700 ribu',
                 'point' => 90,
                 'stock' => 14,
@@ -73,7 +73,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => '2.png',
+                'img' => 'exsport casual totepack.png',
                 'name' => 'Exsport Daily Casual Laptop Totepack',
                 'point' => 75,
                 'stock' => 10,
@@ -81,7 +81,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => 'garmin.png',
+                'img' => 'xiaomi watch 5 active.png',
                 'name' => 'Xiaomi Redmi Watch 5 Active',
                 'point' => 60,
                 'stock' => 10,
@@ -89,7 +89,7 @@ class PrizeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'img' => 'gopay.png',
+                'img' => '10.png',
                 'name' => 'Saldo LinkAja/Ovo/Gopay 300 ribu',
                 'point' => 45,
                 'stock' => 33,

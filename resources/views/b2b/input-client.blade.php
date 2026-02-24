@@ -89,9 +89,9 @@
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>Nama PIC</th>
                             <th>Perusahaan</th>
-                            <th>Nama Pelanggan</th>
-                            <th>Email Pelanggan</th>
+                            <th>Email PIC</th>
                             <th>No. HP</th>
                             <th>Sector</th>
                             <th>Akun MyAds</th>
@@ -101,8 +101,8 @@
                         @forelse ($clients as $index => $client)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $client->company_name }}</td>
                                 <td>{{ $client->customer_name ?: '-' }}</td>
+                                <td>{{ $client->company_name }}</td>
                                 <td>{{ $client->customer_email }}</td>
                                 <td>{{ $client->customer_phone }}</td>
                                 <td>{{ $client->sector ?: '-' }}</td>

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 class B2BPortalController extends Controller
 {
     private const CAMPAIGN_PACKAGE_NAMES = [
-        'paket rendang',
+        // 'paket rendang',
     ];
 
     public function inputClient()
@@ -235,10 +235,10 @@ class B2BPortalController extends Controller
 
         $clientRows = $clients->map(function ($client) use ($topupByEmail, $packagePointByEmail) {
             $email = strtolower(trim((string) $client->myads_account));
-            $topup = (float) ($topupByEmail[$email] ?? 0);
+            $topup = (int) ($topupByEmail[$email] ?? 0);
             $pointPackage = (int) ($packagePointByEmail[$email] ?? 0);
-            $pointFromTopup = $topup / 1000000;
-            $pointSisa = $pointFromTopup + $pointPackage;
+            $pointFromTopup = (int) ($topup / 1000000);
+            $pointSisa = (int) $pointFromTopup;
 
             return [
                 'company_name' => $client->company_name,
