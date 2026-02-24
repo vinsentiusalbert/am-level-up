@@ -58,8 +58,8 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Perusahaan</th>
                             <th>Nama PIC</th>
+                            <th>Perusahaan</th>
                             <th>Email PIC</th>
                             <th>Akun MyAds</th>
                             <th class="text-end">Topup</th>
@@ -72,14 +72,14 @@
                         @forelse ($summary['clients'] as $index => $row)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $row['company_name'] }}</td>
                                 <td>{{ $row['customer_name'] ?: '-' }}</td>
+                                <td>{{ $row['company_name'] }}</td>
                                 <td>{{ $row['customer_email'] }}</td>
                                 <td>{{ $row['myads_account'] }}</td>
                                 <td class="text-end">Rp {{ number_format($row['topup'], 0, ',', '.') }}</td>
-                                <td class="text-end">{{ number_format($row['point_decimal'], 2, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format($row['point_decimal'], 0, ',', '.') }}</td>
                                 <td class="text-end">{{ $row['point_package'] }}</td>
-                                <td class="text-end">{{ number_format($row['point_sisa'], 2, ',', '.')  }}</td>
+                                <td class="text-end">{{ number_format($row['point_sisa'], 0, ',', '.')  }}</td>
                             </tr>
                         @empty
                             <tr>

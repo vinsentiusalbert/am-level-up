@@ -144,7 +144,7 @@
                             <th>No</th>
                             {{-- <th>ID</th> --}}
                             <th>Nama Akun</th>
-                            <th>Nama Pelanggan</th>
+                            <th>Nama PIC</th>
                             <th>Total Poin</th>
                             <th>Kategori Liga</th>
                         </tr>
@@ -222,7 +222,7 @@
                             <th>No</th>
                             {{-- <th>ID</th> --}}
                             <th>Nama Akun</th>
-                            <th>Nama Pelanggan</th>
+                            <th>Nama PIC</th>
                             <th>Total Poin</th>
                             <th>Kategori Liga</th>
                         </tr>
@@ -300,7 +300,7 @@
                             <th>No</th>
                             {{-- <th>ID</th> --}}
                             <th>Nama Akun</th>
-                            <th>Nama Pelanggan</th>
+                            <th>Nama PIC</th>
                             <th>Total Poin</th>
                             <th>Kategori Liga</th>
                         </tr>
