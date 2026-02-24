@@ -47,7 +47,7 @@
                 </strong>
             </div>
         </div>
-        @if(!empty($headerSummary))
+        {{-- @if(!empty($headerSummary))
             <div class="table-responsive mt-4">
                 <table class="table table-sm table-bordered align-middle mb-0">
                     <thead class="table-light">
@@ -84,7 +84,7 @@
                     </tbody>
                 </table>
             </div>
-        @endif
+        @endif --}}
     @endauth
 </section>
 
