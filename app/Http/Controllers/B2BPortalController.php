@@ -128,7 +128,7 @@ class B2BPortalController extends Controller
         [$monthDate, $startDate, $endDate, $monthValue, $monthLabel] = $this->resolveMonth($request->get('month'));
         $summary = $this->buildUserPerformance(Auth::id(), $monthDate, $startDate, $endDate);
 
-        $prizes = Prize::query()->orderBy('point', 'asc')->get();
+        $prizes = Prize::query()->orderBy('point', 'desc')->get();
         $redeem = DB::table('redeem_prizes_am_level_up')->where('user_id', Auth::id())->first();
 
         $availablePoints = max($summary['points'], 0);
@@ -264,8 +264,7 @@ class B2BPortalController extends Controller
             $emails,
             $topupByEmail
         );
-        $pointsFromSisa = (float) $clientRows->sum('point_sisa');
-        $pointsFloor = (int) floor($pointsFromSisa);
+        $pointsFloor = ((int) $summary->point_rounded) + ((int) $summary->campaign_point);
         $totalRedeemPoint = (int) $summary->total_redeem_point;
         $finalPoints = max($pointsFloor - $totalRedeemPoint, 0);
 
@@ -300,17 +299,24 @@ class B2BPortalController extends Controller
         }
 
         $totalTopup = (float) array_sum($topupByEmail);
+        $monthlyPointDecimal = $totalTopup / 1000000;
+        $monthlyPointRounded = (int) floor($monthlyPointDecimal);
 
         $previousSummary = $this->getPreviousMonthSummary($userId, $monthStart);
-        $carryInAmount = (float) ($previousSummary->carry_out_amount ?? 0);
+        $previousPointRounded = (int) ($previousSummary->point_rounded ?? 0);
+        $previousCampaignPoint = (int) ($previousSummary->campaign_point ?? 0);
+        $carryInPoint = $previousPointRounded + $previousCampaignPoint;
 
-        $totalAmountForPoint = $carryInAmount + $totalTopup;
-        $pointDecimal = $totalAmountForPoint / 1000000;
-        $pointRounded = (int) floor($pointDecimal);
-        $carryOutAmount = $totalAmountForPoint - ($pointRounded * 1000000);
-        $carryOutDecimal = $carryOutAmount / 1000000;
+        // Carry antar bulan adalah poin integer.
+        // Untuk kolom amount, konversi ke nominal ekuivalen (1 poin = 1.000.000).
+        $carryInAmount = (float) ($carryInPoint * 1000000);
+        $totalAmountForPoint = $totalTopup;
+        $pointDecimal = $monthlyPointDecimal;
+        $carryOutAmount = 0.0;
+        $carryOutDecimal = 0.0;
         $campaignPointFromTable = $this->queryCampaignPointByEmails($emails, $startDate, $endDate);
         $campaignPoint = (int) $campaignPointFromTable;
+        $pointRounded = $carryInPoint + $monthlyPointRounded;
         $totalRedeemPoint = (int) DB::table('redeem_prizes_am_level_up')
             ->where('user_id', $userId)
             ->sum('point_used');

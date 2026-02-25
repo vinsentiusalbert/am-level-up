@@ -47,6 +47,44 @@
                 </strong>
             </div>
         </div>
+        {{-- @if(!empty($headerSummary))
+            <div class="table-responsive mt-4">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Summary Header</th>
+                            <th>{{ $headerSummary['bulan_lalu']['label'] ?? 'Bulan Lalu' }}</th>
+                            <th>{{ $headerSummary['bulan_ini']['label'] ?? 'Bulan Ini' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total Topup</td>
+                            <td>Rp {{ number_format((float) ($headerSummary['bulan_lalu']['total_topup'] ?? 0), 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format((float) ($headerSummary['bulan_ini']['total_topup'] ?? 0), 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Poin</td>
+                            <td>{{ (int) ($headerSummary['bulan_lalu']['total_poin'] ?? 0) }}</td>
+                            <td>{{ (int) ($headerSummary['bulan_ini']['total_poin_bruto'] ?? 0) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Poin Carry In (dari bulan lalu)</td>
+                            <td>-</td>
+                            <td>{{ (int) ($headerSummary['carry_in_point'] ?? 0) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Redeem</td>
+                            <td colspan="2">{{ (int) ($headerSummary['redeem'] ?? 0) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Poin Akhir</td>
+                            <td colspan="2"><strong>{{ (int) ($headerSummary['poin_akhir'] ?? 0) }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        @endif --}}
     @endauth
 </section>
 
@@ -656,4 +694,3 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </script>
 @endpush
-

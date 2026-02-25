@@ -173,6 +173,7 @@ class AMLevelUpController extends Controller
             \Log::info('Starting calculateAmLevelUpData...');
             $data = $this->calculateAmLevelUpData($request->tanggal);
             $prizes = Prize::orderBy('point', 'desc')->get();
+            $headerSummary = null;
             if ($user) {
                 $date = Carbon::today();
                 $userEmail = $user->email_client ?? $user->email;
@@ -181,12 +182,32 @@ class AMLevelUpController extends Controller
                         ->where('user_id', $user->id)
                         ->whereDate('period_month', $date->copy()->startOfMonth()->toDateString())
                         ->first();
+                    $previousSummary = DB::table('b2b_am_point_summaries')
+                        ->where('user_id', $user->id)
+                        ->whereDate('period_month', $date->copy()->subMonth()->startOfMonth()->toDateString())
+                        ->first();
 
                     $finalPoint = 0;
                     if ($summary) {
                         $basePoint = ((int) ($summary->point_rounded ?? 0)) + ((int) ($summary->campaign_point ?? 0));
                         $finalPoint = max($basePoint - ((int) ($summary->total_redeem_point ?? 0)), 0);
                     }
+
+                    $headerSummary = [
+                        'bulan_ini' => [
+                            'label' => $date->copy()->translatedFormat('F Y'),
+                            'total_topup' => (float) ($summary->total_topup ?? 0),
+                            'total_poin_bruto' => ((int) ($summary->point_rounded ?? 0)) + ((int) ($summary->campaign_point ?? 0)),
+                        ],
+                        'bulan_lalu' => [
+                            'label' => $date->copy()->subMonth()->translatedFormat('F Y'),
+                            'total_topup' => (float) ($previousSummary->total_topup ?? 0),
+                            'total_poin' => max((((int) ($previousSummary->point_rounded ?? 0)) + ((int) ($previousSummary->campaign_point ?? 0))) - ((int) ($previousSummary->total_redeem_point ?? 0)), 0),
+                        ],
+                        'carry_in_point' => ((int) ($previousSummary->point_rounded ?? 0)) + ((int) ($previousSummary->campaign_point ?? 0)),
+                        'redeem' => (int) ($summary->total_redeem_point ?? 0),
+                        'poin_akhir' => (int) $finalPoint,
+                    ];
 
                     $point = (object) [
                         'poin' => (int) $finalPoint,
@@ -222,7 +243,7 @@ class AMLevelUpController extends Controller
             // true kalau sudah boleh redeem
             $isRedeemPeriod = $today->gte($redeemStartDate);
             return view('amlevelup.index', compact('data', 'point','prizes', 'hasRedeemed', 'redeemedPrizeId',
-    'isRedeemPeriod'));
+    'isRedeemPeriod', 'headerSummary'));
                 
         } catch (\Exception $e) {
             \Log::error("Error in getReportData: " . $e->getMessage());
@@ -247,9 +268,9 @@ class AMLevelUpController extends Controller
                     'u.name as nama_canvasser',
                     'u.name as nama_akun',
                     'u.email as email_client',
-                    DB::raw('GREATEST((FLOOR((COALESCE(s.total_topup,0) / 1000000) + COALESCE(s.campaign_point,0)) - COALESCE(s.total_redeem_point,0)), 0) as poin')
+                    DB::raw('GREATEST(((COALESCE(s.point_rounded,0) + COALESCE(s.campaign_point,0)) - COALESCE(s.total_redeem_point,0)), 0) as poin')
                 )
-                ->orderByDesc(DB::raw('GREATEST((FLOOR((COALESCE(s.total_topup,0) / 1000000) + COALESCE(s.campaign_point,0)) - COALESCE(s.total_redeem_point,0)), 0)'))
+                ->orderByDesc(DB::raw('GREATEST(((COALESCE(s.point_rounded,0) + COALESCE(s.campaign_point,0)) - COALESCE(s.total_redeem_point,0)), 0)'))
                 ->get();
 
             if ($b2bRows->isNotEmpty()) {
@@ -597,19 +618,34 @@ class AMLevelUpController extends Controller
                 // Lock poin user
                 $date = now();
                 $userEmail = $user->email_client ?? $user->email;
-
-                $userPointRecord = DB::table('summary_am_level_up')
-                    ->where('email_client', $userEmail)
-                    ->whereMonth('created_at', $date->month)
-                    ->whereYear('created_at', $date->year)
-                    ->lockForUpdate()
-                    ->first();
-
-                $userPoint = (int) ($userPointRecord->poin ?? 0);
-                $userPointPackage = (int) ($userPointRecord->poin_package ?? 0);
                 $requiredPoint = (int) $prize->point;
 
-                if (($userPoint + $userPointPackage) < $requiredPoint) {
+                if (($user->role ?? null) === 'b2b') {
+                    $periodMonth = $date->copy()->startOfMonth()->toDateString();
+
+                    $userPointRecord = DB::table('b2b_am_point_summaries')
+                        ->where('user_id', $user->id)
+                        ->whereDate('period_month', $periodMonth)
+                        ->lockForUpdate()
+                        ->first();
+
+                    $userPoint = ((int) ($userPointRecord->point_rounded ?? 0)) + ((int) ($userPointRecord->campaign_point ?? 0));
+                    $userPointRedeem = (int) ($userPointRecord->total_redeem_point ?? 0);
+                    $availablePoint = max($userPoint - $userPointRedeem, 0);
+                } else {
+                    $userPointRecord = DB::table('summary_am_level_up')
+                        ->where('email_client', $userEmail)
+                        ->whereMonth('created_at', $date->month)
+                        ->whereYear('created_at', $date->year)
+                        ->lockForUpdate()
+                        ->first();
+
+                    $userPoint = (int) ($userPointRecord->poin ?? 0);
+                    $userPointPackage = (int) ($userPointRecord->poin_package ?? 0);
+                    $availablePoint = $userPoint + $userPointPackage;
+                }
+
+                if ($availablePoint < $requiredPoint) {
                     throw new \Exception('Poin tidak cukup untuk menukar hadiah ini');
                 }
 
@@ -625,8 +661,23 @@ class AMLevelUpController extends Controller
                     'updated_at' => now(),
                 ]);
 
-                // Update summary
-                $this->updateSummaryAfterRedeem($user->id);
+                // Update summary setelah redeem
+                if (($user->role ?? null) === 'b2b') {
+                    $periodMonth = $date->copy()->startOfMonth()->toDateString();
+                    $totalRedeemPoint = (int) DB::table('redeem_prizes_am_level_up')
+                        ->where('user_id', $user->id)
+                        ->sum('point_used');
+
+                    DB::table('b2b_am_point_summaries')
+                        ->where('user_id', $user->id)
+                        ->whereDate('period_month', $periodMonth)
+                        ->update([
+                            'total_redeem_point' => $totalRedeemPoint,
+                            'updated_at' => now(),
+                        ]);
+                } else {
+                    $this->updateSummaryAfterRedeem($user->id);
+                }
             });
 
             return response()->json([
