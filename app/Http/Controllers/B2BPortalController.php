@@ -128,7 +128,7 @@ class B2BPortalController extends Controller
         [$monthDate, $startDate, $endDate, $monthValue, $monthLabel] = $this->resolveMonth($request->get('month'));
         $summary = $this->buildUserPerformance(Auth::id(), $monthDate, $startDate, $endDate);
 
-        $prizes = Prize::query()->orderBy('point', 'asc')->get();
+        $prizes = Prize::query()->orderBy('point', 'desc')->get();
         $redeem = DB::table('redeem_prizes_am_level_up')->where('user_id', Auth::id())->first();
 
         $availablePoints = max($summary['points'], 0);
