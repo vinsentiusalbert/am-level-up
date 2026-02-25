@@ -35,7 +35,7 @@
                          style="width: 56px; height: 56px; object-fit: contain;">
                     <div>
                         <h5 class="mb-1">{{ $category['title'] }}</h5>
-                        <p class="text-muted mb-0">Top 10 - {{ $category['range'] }}</p>
+                        <p class="text-muted mb-0">Top 10 | {{ $category['range'] }}</p>
                     </div>
                 </div>
 
