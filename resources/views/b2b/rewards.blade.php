@@ -34,10 +34,10 @@
 <div class="container py-4">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <h4 class="mb-0">Reward</h4>
-        <form method="GET" class="d-flex gap-2">
+        {{-- <form method="GET" class="d-flex gap-2">
             <input type="month" name="month" value="{{ $monthValue }}" class="form-control">
             <button class="btn btn-outline-primary">Filter</button>
-        </form>
+        </form> --}}
     </div>
 
     <p class="text-muted">Periode poin: {{ $monthLabel }}</p>
